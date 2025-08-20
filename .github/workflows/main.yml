@@ -1,0 +1,72 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'   # 自动触发：push tag v1.0.0
+  workflow_dispatch:   # 手动触发
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Get version from extension.json
+        id: get_version
+        run: echo "VERSION=$(jq -r .version extension.json)" >> $GITHUB_ENV
+
+      - name: Extract changelog for version
+        id: changelog
+        run: |
+          VERSION=${{ env.VERSION }}
+          echo "🔎 Extracting changelog for version $VERSION from CHANGELOG.md"
+          NOTES=$(awk "/^# ${VERSION}/ {flag=1; next} /^#/ {if(flag) exit} flag" CHANGELOG.md)
+          # 如果 NOTES 为空，则从 # VERSION 开始一直到文件末尾
+          if [ -z "$NOTES" ]; then
+            NOTES=$(awk "/^# ${VERSION}/ {flag=1; next} flag" CHANGELOG.md)
+          fi
+          # 在 notes 最后追加自动发布说明
+          NOTES="$NOTES\n\n---\n由GitHub actions自动构建并发布\n也可前往[嘉立创EDA扩展广场](https://extensions.oshwhub.com/item/oshwhub/docs-tools)下载"
+          
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo -e "$NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "------ Release Notes ------"
+          echo -e "$NOTES"
+          echo "---------------------------"
+
+
+      - name: Debug check artifact
+        run: |
+          VERSION=${{ env.VERSION }}
+          FILE="build/dist/docs-tools_v${VERSION}.eext"
+          if [ -f "$FILE" ]; then
+            echo "✅ Found artifact: $FILE"
+          else
+            echo "❌ Artifact not found: $FILE"
+            ls -R build || true
+            exit 1
+          fi
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          body: ${{ env.RELEASE_NOTES }}
+          files: build/dist/docs-tools_v${{ env.VERSION }}.eext
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
