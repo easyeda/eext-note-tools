@@ -1,0 +1,53 @@
+{
+	"name": "docs-tools",
+	"uuid": "57bcde82f3754817b381a0ef2f10cbdb",
+	"displayName": "Docs_Tools文档工具",
+	"description": "专业版编辑器文档工具",
+	"version": "1.0.0",
+	"publisher": "JLCEDA <support@lceda.cn>",
+	"engines": {
+		"eda": "^2.3.0"
+	},
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "extension-store",
+		"url": ""
+	},
+	"categories": "PCB",
+	"keywords": [
+		"Docs"
+	],
+	"images": {
+		"logo": "./images/logo.png"
+	},
+	"homepage": "https://pro.lceda.cn",
+	"bugs": "https://lceda.cn/page/feedback?originPage=other",
+	"activationEvents": {},
+	"entry": "./dist/index",
+	"dependentExtensions": {},
+	"headerMenus": {
+		"pcb": [
+			{
+				"id": "DocsTools",
+				"title": "DocsTools",
+				"menuItems": [
+					{
+						"id": "LaTeX",
+						"title": "LaTex",
+						"registerFn": "pcb_LaTeX"
+					},
+					{
+						"id": "Markdown",
+						"title": "Markdown",
+						"registerFn": "pcb_Markdown"
+					},
+					{
+						"id": "About",
+						"title": "About...",
+						"registerFn": "about"
+					}
+				]
+			}
+		]
+	}
+}

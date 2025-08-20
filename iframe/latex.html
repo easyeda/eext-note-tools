@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+	<meta charset="utf-8" />
+	<title>LaTeX</title>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+	<script src="/iframe/js/tex-svg.js"></script>
+	<style>
+		body {
+			font-family: 'Segoe UI', sans-serif;
+			background: #f0f2f5;
+			padding: 20px;
+		}
+
+		.input-group {
+			display: flex;
+			gap: 10px;
+			margin-bottom: 20px;
+		}
+
+		#latexInput {
+			flex: 1;
+			padding: 12px;
+			border: 2px solid #1890ff;
+			border-radius: 6px;
+			font-size: 14px;
+		}
+
+		button {
+			padding: 12px 24px;
+			background: #1890ff;
+			color: white;
+			border: none;
+			border-radius: 6px;
+			cursor: pointer;
+			transition: background 0.3s;
+		}
+
+		button:hover {
+			background: #096dd9;
+		}
+
+		.preview-box {
+			background: white; /* 外层背景 */
+			border-radius: 8px; /* 圆角 */
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			display: flex;
+			flex-direction: column;
+			overflow: hidden; /* 让内部滚动不会超出圆角 */
+		}
+
+		.preview-title {
+			font-size: 16px;
+			color: #333;
+			padding: 12px 20px;
+			border-bottom: 1px solid #eee;
+			flex-shrink: 0;
+			background: inherit; /* 继承父背景，不覆盖圆角 */
+		}
+
+		.preview-content {
+			padding: 20px;
+			min-height: 80px;
+			max-height: 80px;
+			overflow-y: auto;
+			overflow-x: auto;
+			background: inherit; /* 继承父背景，不覆盖圆角 */
+			flex: 1;
+		}
+
+
+		#previewSvg {
+			padding: 10px;
+			display: inline-block;
+		}
+	</style>
+</head>
+<body>
+
+<!-- 输入框 + 按钮 -->
+<div class="input-group">
+	<input id="latexInput" placeholder="在此输入LaTeX表达式..." type="text">
+	<button onclick="generateImage()">生成</button>
+</div>
+
+<!-- 实时预览区域 -->
+<div class="preview-box">
+	<div class="preview-title">预览</div>
+	<div class="preview-content" id="previewSvg"></div>
+</div>
+
+<script>
+	// 输入框与预览容器
+	const latexInput = document.getElementById('latexInput');
+	const previewDiv = document.getElementById('previewSvg');
+	/**
+	 * 实时渲染 LaTeX to SVG 预览
+	 */
+	latexInput.addEventListener('input', async () => {
+		const latex = latexInput.value.trim();
+		previewDiv.innerHTML = ''; // 清空旧内容
+		if (!latex) return; // 空输入时不处理
+		try {
+			// 创建 span 包裹 LaTeX
+			const node = document.createElement('span');
+			node.innerHTML = `\\(${latex}\\)`;
+			previewDiv.appendChild(node);
+
+			// 调用 MathJax 渲染
+			await MathJax.typesetPromise([node]);
+
+			// 提取 SVG 并替换展示
+			const svg = node.querySelector('svg');
+			if (svg) {
+				previewDiv.innerHTML = '';
+				previewDiv.appendChild(svg.cloneNode(true));
+			}
+		} catch (err) {
+			eda.sys_Message.showToastMessage('预览渲染失败:' + err, 'error');
+		}
+	});
+	/**
+	 * 点击按钮 to 导出为 PNG 并尝试生成 PCB 图元
+	 */
+	async function generateImage() {
+		const svg = previewDiv.querySelector('svg');
+		if (!svg) {
+			eda.sys_Message.showToastMessage('请先输入有效的LaTeX表达式', 'warn');
+			return;
+		}
+		try {
+			// 将 SVG 序列化为字符串
+			const svgText = new XMLSerializer().serializeToString(svg);
+			const blob = new Blob([svgText], { type: 'image/svg+xml' });
+			const url = URL.createObjectURL(blob);
+			// 加载为 Image 对象
+			const img = new Image();
+			img.onload = async () => {
+				// 绘制到 Canvas
+				const canvas = document.createElement('canvas');
+				canvas.width = img.width;
+				canvas.height = img.height;
+				const ctx = canvas.getContext('2d');
+				ctx.drawImage(img, 0, 0);
+				// 转换为 PNG Blob
+				canvas.toBlob(async (pngBlob) => {
+					const pngUrl = URL.createObjectURL(pngBlob);
+//					console.log('生成 PNG URL:', pngUrl);
+					// 调用 PCB_MathPolygon API 生成多边形（仅在 EDA 环境中生效）
+					const polygon = await eda.pcb_MathPolygon.convertImageToComplexPolygon(
+						pngBlob,
+						img.naturalWidth,
+						img.naturalHeight,
+						0.28, // 精度参数
+					);
+//					console.log('生成的多边形对象:', polygon);
+					// 进一步创建 PCB 图元
+					try {
+						const imagePrimitive = await eda.pcb_PrimitiveImage.create(
+							0, 0,
+							polygon,
+							EPCB_LayerId.DOCUMENT,
+							img.naturalWidth,
+							img.naturalHeight,
+						);
+//						console.log('创建的图像图元:', imagePrimitive);
+					} catch (err) {
+						eda.sys_Message.showToastMessage('图元创建异常:' + err, 'error');
+//						console.error('图元创建异常:', err);
+					}
+				}, 'image/png');
+			};
+			img.src = url;
+			eda.sys_Message.showToastMessage('生成成功，位于文档层坐标原点处', 'success');
+		} catch (err) {
+			eda.sys_Message.showToastMessage('生成失败:' + err, 'error');
+//			console.error('生成失败:', err);
+		}
+	}
+</script>
+</body>
+</html>
