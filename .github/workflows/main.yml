@@ -24,22 +24,23 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Get version from extension.json
-        id: get_version
-        run: echo "VERSION=$(jq -r .version extension.json)" >> $GITHUB_ENV
+      - name: Get version & extension name from extension.json
+        id: meta
+        run: |
+          echo "VERSION=$(jq -r .version extension.json)" >> $GITHUB_ENV
+          echo "EEXTNAME=$(jq -r .name extension.json)" >> $GITHUB_ENV
 
       - name: Extract changelog for version
         id: changelog
         run: |
           VERSION=${{ env.VERSION }}
+          EEXTNAME=${{ env.EEXTNAME }}
           echo "🔎 Extracting changelog for version $VERSION from CHANGELOG.md"
           NOTES=$(awk "/^# ${VERSION}/ {flag=1; next} /^#/ {if(flag) exit} flag" CHANGELOG.md)
-          # 如果 NOTES 为空，则从 # VERSION 开始一直到文件末尾
           if [ -z "$NOTES" ]; then
             NOTES=$(awk "/^# ${VERSION}/ {flag=1; next} flag" CHANGELOG.md)
           fi
-          # 在 notes 最后追加自动发布说明
-          NOTES="$NOTES\n\n---\n由GitHub actions自动构建并发布\n也可前往[嘉立创EDA扩展广场](https://extensions.oshwhub.com/item/oshwhub/docs-tools)下载"
+          NOTES="$NOTES\n\n---\n由GitHub actions自动构建并发布\n也可前往[嘉立创EDA扩展广场](https://extensions.oshwhub.com/item/oshwhub/${EEXTNAME})下载"
           
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo -e "$NOTES" >> $GITHUB_ENV
@@ -48,11 +49,11 @@ jobs:
           echo -e "$NOTES"
           echo "---------------------------"
 
-
       - name: Debug check artifact
         run: |
           VERSION=${{ env.VERSION }}
-          FILE="build/dist/docs-tools_v${VERSION}.eext"
+          EEXTNAME=${{ env.EEXTNAME }}
+          FILE="build/dist/${EEXTNAME}_v${VERSION}.eext"
           if [ -f "$FILE" ]; then
             echo "✅ Found artifact: $FILE"
           else
@@ -67,6 +68,6 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: Release v${{ env.VERSION }}
           body: ${{ env.RELEASE_NOTES }}
-          files: build/dist/docs-tools_v${{ env.VERSION }}.eext
+          files: build/dist/${{ env.EEXTNAME }}_v${{ env.VERSION }}.eext
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
