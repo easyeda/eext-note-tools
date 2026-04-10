@@ -1,8 +1,8 @@
 {
 	"name": "docs-tools",
 	"uuid": "57bcde82f3754817b381a0ef2f10cbdb",
-	"displayName": "Markdown&LaTeX注释工具",
-	"description": "专业版编辑器支持Markdown&LaTeX的注释工具",
+	"displayName": "Note-Tools注释工具",
+	"description": "支持Markdown&LaTeX的注释工具",
 	"version": "2.4.1",
 	"publisher": "JLCEDA",
 	"engines": {

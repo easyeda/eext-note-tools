@@ -1,6 +1,6 @@
 # 2.4.1
 ## 变更
-- 变更扩展显示名"Docs_Tools文档工具"为"Markdown&LaTeX注释工具"  
+- 变更扩展显示名"Docs_Tools文档工具"为"Note-Tools注释工具"  
 - 将放置方式从"放置于原点"改为"鼠标点击画布放置"
 - package.json同步到最新SDK版本
 
