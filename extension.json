@@ -1,27 +1,27 @@
 {
 	"name": "docs-tools",
 	"uuid": "57bcde82f3754817b381a0ef2f10cbdb",
-	"displayName": "Docs_Tools文档工具",
-	"description": "专业版编辑器文档工具",
-	"version": "1.0.0",
-	"publisher": "JLCEDA <support@lceda.cn>",
+	"displayName": "Markdown&LaTeX注释工具",
+	"description": "专业版编辑器支持Markdown&LaTeX的注释工具",
+	"version": "2.4.1",
+	"publisher": "JLCEDA",
 	"engines": {
 		"eda": "^2.3.0"
 	},
 	"license": "Apache-2.0",
 	"repository": {
-		"type": "extension-store",
-		"url": ""
+		"type": "github",
+		"url": "https://github.com/easyeda/eext-note-tools"
 	},
 	"categories": "PCB",
 	"keywords": [
 		"Docs"
 	],
 	"images": {
-		"logo": "./images/logo.png"
+		"logo": "./images/logo.jpg"
 	},
 	"homepage": "https://pro.lceda.cn",
-	"bugs": "https://lceda.cn/page/feedback?originPage=other",
+	"bugs": "https://github.com/easyeda/eext-note-tools/issues",
 	"activationEvents": {},
 	"entry": "./dist/index",
 	"dependentExtensions": {},
@@ -29,7 +29,7 @@
 		"pcb": [
 			{
 				"id": "DocsTools",
-				"title": "DocsTools",
+				"title": "Note-Tools注释工具",
 				"menuItems": [
 					{
 						"id": "LaTeX",

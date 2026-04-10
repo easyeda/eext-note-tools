@@ -15,19 +15,19 @@
 
 		.container {
 			display: flex;
-			gap: 20px; /* 左右间隔 */
-			min-width: 0; /* 防止 flex 子项溢出 */
+			gap: 20px;
+			min-width: 0;
 		}
 
 		#mdInput {
 			flex: 1;
-			min-width: 40%; /* 左边至少占40% */
+			min-width: 40%;
 			height: 310px;
 			padding: 12px;
 			border: 2px solid #1890ff;
 			border-radius: 6px;
 			font-size: 14px;
-			resize: none; /* 禁止拉伸 */
+			resize: none;
 		}
 
 		.preview-box {
@@ -58,8 +58,8 @@
 			padding: 10px;
 			min-height: 100px;
 			max-height: 220px;
-			overflow-y: auto; /* 纵向滚动条 */
-			overflow-x: auto; /* 横向滚动条 */
+			overflow-y: auto;
+			overflow-x: auto;
 			background: #fafafa;
 			flex: 1;
 			white-space: normal;
@@ -118,13 +118,15 @@
 		try {
 			previewDiv.innerHTML = marked.parse(mdText || '');
 		} catch (error) {
-//			console.error('Markdown解析出错:', error);
 			eda.sys_Message.showToastMessage('Markdown解析出错:' + error, 'error');
 		}
 	});
 
+	/** 用于防止重复注册鼠标事件的唯一 ID */
+	const MOUSE_EVENT_ID = 'docs-tools-markdown-place';
+
 	/**
-	 * 点击按钮 to 导出 PNG to 调用 PCB API
+	 * 点击按钮：生成多边形数据，隐藏窗口，等待用户在画布上点击放置
 	 */
 	async function generateImage() {
 		if (!previewDiv.innerHTML.trim()) {
@@ -137,42 +139,62 @@
 			clone.style.overflow = 'visible';
 			clone.style.maxHeight = 'none';
 			clone.style.position = 'absolute';
-			clone.style.left = '-9999px'; // 屏幕外
+			clone.style.left = '-9999px';
 			document.body.appendChild(clone);
 			// 将 DOM 转换为 Canvas
 			const canvas = await html2canvas(clone, { backgroundColor: null });
-			document.body.removeChild(clone); // 清理副本
+			document.body.removeChild(clone);
 			// 转换为 PNG Blob
 			canvas.toBlob(async (pngBlob) => {
-//				console.log("生成 PNG Blob:", pngBlob);
-				// 调用 PCB_MathPolygon API（在 EDA 环境下才有效）
+				// 调用 PCB_MathPolygon API
 				const polygon = await eda.pcb_MathPolygon.convertImageToComplexPolygon(
 					pngBlob,
 					canvas.width,
 					canvas.height,
 					0.45,
 				);
-//				console.log('生成的多边形对象:', polygon);
-				// 创建 PCB 图元
+				const width = canvas.width;
+				const height = canvas.height;
 
-				try {
-					const imagePrimitive = await eda.pcb_PrimitiveImage.create(
-						0, 0,
-						polygon,
-						EPCB_LayerId.DOCUMENT,
-						canvas.width,
-						canvas.height,
-					);
-//					console.log('创建的图像图元:', imagePrimitive);
-				} catch (err) {
-					eda.sys_Message.showToastMessage('图元创建异常:' + err, 'error');
-//					console.error('图元创建异常:', err);
+				// 隐藏 iframe，让用户可以点击画布
+				await eda.sys_IFrame.hideIFrame();
+				eda.sys_Message.showToastMessage('请在画布上点击要放置的位置', 'info');
+
+				// 注册一次性鼠标事件，等待用户点击
+				if (eda.pcb_Event.isEventListenerAlreadyExist(MOUSE_EVENT_ID)) {
+					eda.pcb_Event.removeEventListener(MOUSE_EVENT_ID);
 				}
+				eda.pcb_Event.addMouseEventListener(
+					MOUSE_EVENT_ID,
+					'all',
+					async () => {
+						try {
+							const pos = await eda.pcb_SelectControl.getCurrentMousePosition();
+							if (!pos) {
+								eda.sys_Message.showToastMessage('无法获取鼠标位置', 'error');
+								await eda.sys_IFrame.showIFrame();
+								return;
+							}
+							await eda.pcb_PrimitiveImage.create(
+								pos.x, pos.y,
+								polygon,
+								EPCB_LayerId.DOCUMENT,
+								width,
+								height,
+							);
+							eda.sys_Message.showToastMessage('放置成功', 'success');
+						} catch (err) {
+							eda.sys_Message.showToastMessage('图元创建异常:' + err, 'error');
+						}
+						// 放置完成后重新显示 iframe
+						await eda.sys_IFrame.showIFrame();
+					},
+					true, // onlyOnce
+				);
 			}, 'image/png');
-			eda.sys_Message.showToastMessage('生成成功，位于文档层坐标原点处', 'success');
 		} catch (err) {
 			eda.sys_Message.showToastMessage('生成失败:' + err, 'error');
-//			console.error('生成失败:', err);
+			await eda.sys_IFrame.showIFrame();
 		}
 	}
 </script>
