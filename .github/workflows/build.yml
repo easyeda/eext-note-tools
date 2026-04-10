@@ -3,9 +3,9 @@ name: Build and Release
 on:
   push:
     branches:
-      - main    # main 分支触发
-      - master  # master 分支触发
-  workflow_dispatch:   # 手动触发
+      - main # main 分支触发
+      - master # master 分支触发
+  workflow_dispatch: # 手动触发
 
 jobs:
   build-and-release:
@@ -59,12 +59,9 @@ jobs:
           VERSION=${{ env.VERSION }}
           EEXTNAME=${{ env.EEXTNAME }}
           echo "🔎 Extracting changelog for version $VERSION from CHANGELOG.md"
-          NOTES=$(awk "/^# ${VERSION}/ {flag=1; next} /^#/ {if(flag) exit} flag" CHANGELOG.md)
-          if [ -z "$NOTES" ]; then
-            NOTES=$(awk "/^# ${VERSION}/ {flag=1; next} flag" CHANGELOG.md)
-          fi
+          NOTES=$(awk "/^# ${VERSION}/ {flag=1; next} /^# [0-9]/ {if(flag) exit} flag" CHANGELOG.md)
           NOTES="$NOTES\n\n---\n由GitHub Actions自动构建并发布\nBuilt and released automatically by GitHub Actions\n\n也可前往[嘉立创EDA扩展广场](https://extensions.oshwhub.com/item/oshwhub/${EEXTNAME})下载\nAlso available at [JLCEDA Extension Plaza](https://extensions.oshwhub.com/item/oshwhub/${EEXTNAME})"
-          
+
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo -e "$NOTES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
