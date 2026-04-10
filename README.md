@@ -14,5 +14,5 @@
 1.在"高级"-"扩展管理器"中导入docs-tools.eext扩展文件。
 ![alt text](images/3.png)
 
-2.进入PCB界面，点击顶部导航栏"DocsTools"选择需要的功能即可。
+2.进入PCB界面，点击顶部导航栏"高级"-"Note-Tools"选择需要的功能即可。
 ![alt text](images/4.png)

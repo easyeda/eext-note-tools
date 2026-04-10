@@ -29,7 +29,7 @@
 		"pcb": [
 			{
 				"id": "DocsTools",
-				"title": "Note-Tools注释工具",
+				"title": "Note-Tools",
 				"menuItems": [
 					{
 						"id": "LaTeX",

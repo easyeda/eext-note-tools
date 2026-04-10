@@ -11,5 +11,5 @@ JLCPCB EDA & EasyEDA Pro support Markdown & LaTeX comment tools.
 1. Import the docs-tools.eext extension file in "Advanced" - "Extension Manager".
 ![alt text](images/3.png)
 
-2. Enter the PCB interface, click on "DocsTools" in the top navigation bar, and select the required function.
+2. Enter the PCB interface, click on "Advanced"-"Note-Tools" in the top navigation bar, and select the required function.
 ![alt text](images/4.png)
