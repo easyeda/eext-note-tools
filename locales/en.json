@@ -2,5 +2,17 @@
 	"About": "About",
 	"EasyEDA extension SDK v": "EasyEDA extension SDK v${1}",
 	"Generate": "Generate",
-	"DocsTools": "DocsTools"
+	"DocsTools": "DocsTools",
+	"Enter LaTeX expression here...": "Enter LaTeX expression here...",
+	"Enter Markdown text here...": "Enter Markdown text here...",
+	"Preview": "Preview",
+	"Preview render failed: ${1}": "Preview render failed: ${1}",
+	"Please enter a valid LaTeX expression": "Please enter a valid LaTeX expression",
+	"Markdown parse error: ${1}": "Markdown parse error: ${1}",
+	"Please enter valid Markdown syntax": "Please enter valid Markdown syntax",
+	"Click on the canvas to place": "Click on the canvas to place",
+	"Failed to get mouse position": "Failed to get mouse position",
+	"Placed successfully": "Placed successfully",
+	"Primitive creation error: ${1}": "Primitive creation error: ${1}",
+	"Generation failed: ${1}": "Generation failed: ${1}"
 }

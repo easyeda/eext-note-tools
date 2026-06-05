@@ -94,19 +94,30 @@
 
 <div class="container">
 	<!-- 左侧 Markdown 输入 -->
-	<textarea id="mdInput" placeholder="在此输入Markdown文本..."></textarea>
+	<textarea id="mdInput" placeholder=""></textarea>
 
 	<!-- 右侧预览 + 导出按钮 -->
 	<div class="preview-box">
 		<div class="preview-header">
-			<div class="preview-title">预览</div>
-			<button onclick="generateImage()">生成</button>
+			<div id="lblPreview" class="preview-title"></div>
+			<button id="btnGenerate" onclick="generateImage()"></button>
 		</div>
 		<div id="previewHtml"></div>
 	</div>
 </div>
 
 <script>
+	var edaObj = (typeof eda !== 'undefined') ? eda : (window.parent && window.parent.eda);
+	function t(tag, ...args) {
+		if (edaObj && edaObj.sys_I18n) return edaObj.sys_I18n.text(tag, undefined, undefined, ...args);
+		return tag;
+	}
+
+	// i18n: set translated text for HTML elements
+	document.getElementById('mdInput').placeholder = t('Enter Markdown text here...');
+	document.getElementById('lblPreview').textContent = t('Preview');
+	document.getElementById('btnGenerate').textContent = t('Generate');
+
 	const mdInput = document.getElementById('mdInput');
 	const previewDiv = document.getElementById('previewHtml');
 
@@ -118,7 +129,7 @@
 		try {
 			previewDiv.innerHTML = marked.parse(mdText || '');
 		} catch (error) {
-			eda.sys_Message.showToastMessage('Markdown解析出错:' + error, 'error');
+			eda.sys_Message.showToastMessage(t('Markdown parse error: ${1}', error), 'error');
 		}
 	});
 
@@ -130,7 +141,7 @@
 	 */
 	async function generateImage() {
 		if (!previewDiv.innerHTML.trim()) {
-			eda.sys_Message.showToastMessage('请先输入有效的Markdown语法', 'warn');
+			eda.sys_Message.showToastMessage(t('Please enter valid Markdown syntax'), 'warn');
 			return;
 		}
 		try {
@@ -158,7 +169,7 @@
 
 				// 隐藏 iframe，让用户可以点击画布
 				await eda.sys_IFrame.hideIFrame();
-				eda.sys_Message.showToastMessage('请在画布上点击要放置的位置', 'info');
+				eda.sys_Message.showToastMessage(t('Click on the canvas to place'), 'info');
 
 				// 注册一次性鼠标事件，等待用户点击
 				if (eda.pcb_Event.isEventListenerAlreadyExist(MOUSE_EVENT_ID)) {
@@ -171,7 +182,7 @@
 						try {
 							const pos = await eda.pcb_SelectControl.getCurrentMousePosition();
 							if (!pos) {
-								eda.sys_Message.showToastMessage('无法获取鼠标位置', 'error');
+								eda.sys_Message.showToastMessage(t('Failed to get mouse position'), 'error');
 								await eda.sys_IFrame.showIFrame();
 								return;
 							}
@@ -182,9 +193,9 @@
 								width,
 								height,
 							);
-							eda.sys_Message.showToastMessage('放置成功', 'success');
+							eda.sys_Message.showToastMessage(t('Placed successfully'), 'success');
 						} catch (err) {
-							eda.sys_Message.showToastMessage('图元创建异常:' + err, 'error');
+							eda.sys_Message.showToastMessage(t('Primitive creation error: ${1}', err), 'error');
 						}
 						// 放置完成后重新显示 iframe
 						await eda.sys_IFrame.showIFrame();
@@ -193,7 +204,7 @@
 				);
 			}, 'image/png');
 		} catch (err) {
-			eda.sys_Message.showToastMessage('生成失败:' + err, 'error');
+			eda.sys_Message.showToastMessage(t('Generation failed: ${1}', err), 'error');
 			await eda.sys_IFrame.showIFrame();
 		}
 	}

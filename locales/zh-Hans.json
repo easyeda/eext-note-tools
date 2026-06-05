@@ -2,5 +2,17 @@
 	"About": "关于",
 	"EasyEDA extension SDK v": "嘉立创EDA 扩展 SDK v${1}",
 	"Generate": "生成",
-	"DocsTools": "文档工具"
+	"DocsTools": "文档工具",
+	"Enter LaTeX expression here...": "在此输入LaTeX表达式...",
+	"Enter Markdown text here...": "在此输入Markdown文本...",
+	"Preview": "预览",
+	"Preview render failed: ${1}": "预览渲染失败: ${1}",
+	"Please enter a valid LaTeX expression": "请先输入有效的LaTeX表达式",
+	"Markdown parse error: ${1}": "Markdown解析出错: ${1}",
+	"Please enter valid Markdown syntax": "请先输入有效的Markdown语法",
+	"Click on the canvas to place": "请在画布上点击要放置的位置",
+	"Failed to get mouse position": "无法获取鼠标位置",
+	"Placed successfully": "放置成功",
+	"Primitive creation error: ${1}": "图元创建异常: ${1}",
+	"Generation failed: ${1}": "生成失败: ${1}"
 }
